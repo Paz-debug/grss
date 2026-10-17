@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f3a5f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ГРСС">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>ГРСС</title>
+<style>
+:root{
+  --bg:#f3f5f8; --card:#ffffff; --ink:#18212b; --muted:#66727f; --line:#e2e6eb;
+  --accent:#1f3a5f; --accent2:#2f6db5; --chip:#e8eef6; --ok:#1e8a4c; --bad:#b3261e; --warn:#c77700;
+  --grp:#dbe7f4; --sub:#eef4fa; --tot:#c9dbef;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0f141a; --card:#171e26; --ink:#e7edf3; --muted:#93a1ae; --line:#26313c;
+    --accent:#8db8ea; --accent2:#8db8ea; --chip:#1f2a36; --ok:#5fcf8f; --bad:#ff8a80; --warn:#ffb74d;
+    --grp:#1d2b3b; --sub:#18232f; --tot:#24364a; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font:inherit;color:inherit}
+.hidden{display:none!important}
+
+/* lock */
+#lock{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg);z-index:50}
+#lock .box{width:100%;max-width:360px;background:var(--card);border-radius:16px;padding:24px;box-shadow:0 6px 24px #0002}
+#lock h1{margin:0 0 4px;font-size:22px}
+#lock p{margin:0 0 16px;color:var(--muted);font-size:13px}
+#lock input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px}
+#lock button{width:100%;margin-top:12px;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:600;font-size:16px}
+@media (prefers-color-scheme: dark){ #lock button{color:#0f141a} }
+#lock .err{color:var(--bad);font-size:13px;margin-top:10px;min-height:18px}
+
+/* layout */
+header{position:sticky;top:0;z-index:10;background:var(--bg);padding:10px 12px 8px;border-bottom:1px solid var(--line)}
+.title{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
+.title h2{margin:0;font-size:19px}
+.title small{color:var(--muted);font-size:12px}
+.search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-size:16px}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.chip{padding:6px 11px;border-radius:999px;background:var(--chip);border:1px solid transparent;font-size:13px;white-space:nowrap}
+.chip.on{background:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){ .chip.on{color:#0f141a} }
+select.chip{appearance:none;max-width:100%;color:var(--ink)}
+.seg{display:flex;overflow-x:auto;gap:6px;margin-top:8px;padding-bottom:2px;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+main{padding:8px 10px 84px}
+.count{color:var(--muted);font-size:12px;margin:2px 4px 8px}
+.list{display:flex;flex-direction:column;gap:6px}
+.item{background:var(--card);border-radius:12px;padding:10px 12px;border:1px solid var(--line)}
+.item .n{font-weight:600}
+.item .s{color:var(--muted);font-size:13px;margin-top:2px}
+.item .t{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.badge{font-size:11px;padding:2px 7px;border-radius:999px;background:var(--chip);color:var(--muted);white-space:nowrap}
+.badge.ok{color:var(--ok)} .badge.bad{color:var(--bad)} .badge.warn{color:var(--warn)}
+.gone{opacity:.55}
+.more{width:100%;padding:12px;margin-top:8px;border-radius:10px;border:1px dashed var(--line);background:transparent;color:var(--accent2)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:20}
+nav button{flex:1;border:0;background:none;padding:9px 2px 8px;font-size:11px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+nav button.on{color:var(--accent2);font-weight:600}
+
+/* card */
+#card{position:fixed;inset:0;background:var(--bg);z-index:30;overflow:auto;padding-bottom:30px}
+#card .head{position:sticky;top:0;background:var(--accent);color:#fff;padding:12px 14px 14px;display:flex;gap:10px;align-items:flex-start}
+@media (prefers-color-scheme: dark){ #card .head{background:#1d2b3b} }
+#card .head .x{border:0;background:#fff3;border-radius:10px;padding:6px 10px;color:#fff;font-size:16px}
+#card .head h3{margin:0;font-size:18px}
+#card .head div div{opacity:.85;font-size:13px;margin-top:3px}
+.sec{background:var(--card);margin:10px;border-radius:12px;border:1px solid var(--line);overflow:hidden}
+.sec h4{margin:0;padding:9px 12px;font-size:13px;color:var(--accent2);background:var(--sub);text-transform:uppercase;letter-spacing:.03em}
+.kv{display:grid;grid-template-columns:42% 58%;padding:8px 12px;border-top:1px solid var(--line);font-size:14px}
+.kv:first-of-type{border-top:0}
+.kv b{font-weight:500;color:var(--muted);font-size:13px;padding-right:8px}
+.kv span{white-space:pre-wrap;word-break:break-word}
+.kv a{color:var(--accent2)}
+.marks{display:flex;gap:6px;flex-wrap:wrap;padding:10px 12px}
+
+/* bcs */
+.bt{background:var(--card);border-radius:12px;border:1px solid var(--line);overflow:hidden}
+.br{display:flex;align-items:center;gap:6px;padding:9px 10px;border-top:1px solid var(--line);font-size:14px}
+.br:first-child{border-top:0}
+.br.g{background:var(--grp);font-weight:700}
+.br.t{background:var(--tot);font-weight:700}
+.br.s{background:var(--sub);font-weight:600}
+.br .car{width:34px;height:30px;line-height:30px;margin:-6px 0 -6px -6px;text-align:center;color:var(--muted);flex:none;font-size:16px}
+.br .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.br .nums{flex:none;text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
+.br .nums small{display:block;color:var(--muted);font-weight:400;font-size:11px}
+.low .nums{color:var(--bad)}
+#sheet{position:fixed;inset:0;z-index:40;background:#0007;display:flex;align-items:flex-end}
+#sheet .pan{background:var(--card);width:100%;max-height:88vh;overflow:auto;border-radius:16px 16px 0 0;padding:0 0 20px}
+#sheet .ph{position:sticky;top:0;background:var(--card);padding:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
+#sheet .ph h3{margin:0;font-size:16px}
+#sheet .ph button{border:0;background:var(--chip);border-radius:10px;padding:6px 12px}
+table.g{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+table.g{table-layout:fixed}table.g th,table.g td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right;font-size:12.5px}
+table.g td:first-child,table.g th:first-child{width:34%;padding-left:10px;word-break:break-word}
+table.g td:last-child,table.g th:last-child{padding-right:10px}
+table.g th:first-child,table.g td:first-child{text-align:left}
+table.g thead th{position:sticky;top:53px;background:var(--sub);font-size:12px;color:var(--muted)}
+#lock .alt{background:transparent;color:var(--accent2);border:1px solid var(--line);font-weight:500}
+#lock .links{display:flex;gap:8px;margin-top:14px}
+#lock .links button{margin-top:0;font-size:13px;padding:9px}
+#lock .hint{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.45}
+#lock .ok{color:var(--ok);font-size:13px;margin:0 0 10px}
+.lockbtn{border:0;background:var(--chip);border-radius:8px;padding:4px 10px;font-size:12px;margin-left:auto}
+.empty{color:var(--muted);text-align:center;padding:40px 10px}
+</style>
+</head>
+<body>
+<div id="lock">
+  <div class="box">
+    <h1>ГРСС</h1>
+    <p id="lockinfo">Облік особового складу • офлайн</p>
+    <div id="stLoad" class="hidden">
+      <p>На цьому пристрої ще немає даних. Відкрийте файл <b>ГРСС_дані.grss</b>, отриманий з програми на ПК.</p>
+      <input id="file" type="file" class="hidden">
+      <button type="button" id="pick">Завантажити файл даних</button>
+      <div class="hint">iPhone: у Telegram/Viber відкрийте файл → «Поділитися» → «Зберегти у Файли», потім натисніть кнопку вище й оберіть його.<br>Дані зберігаються лише на цьому телефоні у зашифрованому вигляді.</div>
+    </div>
+    <div id="stPw" class="hidden">
+      <p class="ok" id="dinfo"></p>
+      <form id="lockform">
+        <input id="pw" type="password" placeholder="Пароль" autocomplete="current-password">
+        <button type="submit" id="unbtn">Відкрити</button>
+      </form>
+      <div class="links"><button type="button" class="alt" id="newfile">Новий файл</button><button type="button" class="alt" id="wipe">Видалити дані</button></div>
+    </div>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <div class="title"><h2 id="vtitle">Особовий склад</h2><small id="vsub"></small><button class="lockbtn" id="relock">Вийти</button></div>
+    <input id="q" class="search" type="search" placeholder="Пошук: ПІБ, посада, підрозділ, телефон…" autocomplete="off">
+    <div id="filters"></div>
+  </header>
+  <main id="view"></main>
+  <nav>
+    <button data-v="people" class="on"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.7 3.3-5.5 6.5-5.5s5.7 1.8 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16 14.6c2.8 0 4.7 1.5 5.4 4.4"/></svg>Особовий склад</button>
+    <button data-v="bday"><svg viewBox="0 0 24 24"><rect x="3.5" y="10" width="17" height="10" rx="2"/><path d="M3.5 14.5c2 1.5 3.5 1.5 5.5 0s3.5-1.5 5.5 0 3.5 1.5 5.5 0M12 10V6.5M12 6.5c-1.2-1-1.2-2.3 0-3.5 1.2 1.2 1.2 2.5 0 3.5"/></svg>Дні народж.</button>
+    <button data-v="courses"><svg viewBox="0 0 24 24"><path d="M2.5 9 12 4.5 21.5 9 12 13.5z"/><path d="M6.5 11v5c3.5 2.5 7.5 2.5 11 0v-5M21.5 9v5"/></svg>Курси</button>
+    <button data-v="bcs"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>БЧС</button>
+  </nav>
+</div>
+
+<div id="card" class="hidden"></div>
+<div id="sheet" class="hidden"></div>
+
+<script>
+let BLOB = null;
+let D = null, P = [], F = {}, BY_ID = {};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm = s => String(s ?? "").replace(/[’ʼ`´‘]/g, "'").toLowerCase().replace(/\s+/g, " ").trim();
+const digits = s => String(s ?? "").replace(/\D/g, "");
+
+function b64(s){ const bin = atob(s); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+async function gunzip(u8){
+  const ds = new DecompressionStream("gzip");
+  const out = new Response(new Blob([u8]).stream().pipeThrough(ds));
+  return await out.text();
+}
+async function unlock(pw){
+  let raw = b64(BLOB.data);
+  if (BLOB.enc){
+    const km = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+    const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(BLOB.salt), iterations:BLOB.iter, hash:"SHA-256"},
+                                              km, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+    raw = new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(BLOB.iv)}, key, raw));
+  }
+  return JSON.parse(await gunzip(raw));
+}
+
+/* ── сховище (IndexedDB) ── */
+function idb(){ return new Promise((ok, no) => { const r = indexedDB.open("grss", 1);
+  r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); }); }
+async function kv(op, key, val){ const db = await idb(); return new Promise((ok, no) => {
+  const t = db.transaction("kv", op === "get" ? "readonly" : "readwrite").objectStore("kv");
+  const r = op === "get" ? t.get(key) : op === "put" ? t.put(val, key) : t.delete(key);
+  r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); }); }
+function parseBlob(text){
+  const o = JSON.parse(text);
+  if (!o || typeof o.data !== "string" || !("enc" in o)) throw new Error("bad");
+  return o;
+}
+function showLoad(msg){ BLOB = null; $("#stPw").classList.add("hidden"); $("#stLoad").classList.remove("hidden"); $("#err").textContent = msg || ""; }
+function showPw(){
+  $("#stLoad").classList.add("hidden"); $("#stPw").classList.remove("hidden");
+  $("#dinfo").textContent = "Файл даних: " + (BLOB.created ? "від " + BLOB.created : "завантажено");
+  $("#pw").classList.toggle("hidden", !BLOB.enc); $("#pw").value = "";
+  if (BLOB.enc) setTimeout(() => $("#pw").focus(), 50);
+}
+$("#pick").onclick = () => $("#file").click();
+$("#newfile").onclick = () => showLoad();
+$("#wipe").onclick = async () => {
+  if (!confirm("Видалити дані ГРСС з цього пристрою?")) return;
+  await kv("del", "blob"); showLoad("Дані видалено з пристрою.");
+};
+$("#file").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    const b = parseBlob(await f.text());
+    await kv("put", "blob", b); BLOB = b; $("#err").textContent = ""; showPw();
+  } catch(err){ $("#err").textContent = "Це не файл даних ГРСС (.grss). Зробіть «Експорт для телефону» в програмі на ПК."; }
+});
+$("#lockform").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("#err").textContent = ""; $("#unbtn").textContent = "Відкриваю…"; $("#unbtn").disabled = true;
+  try { D = await unlock($("#pw").value); $("#pw").value = ""; start(); }
+  catch(err){ $("#err").textContent = BLOB.enc ? "Невірний пароль" : "Не вдалося відкрити файл: " + err; }
+  $("#unbtn").textContent = "Відкрити"; $("#unbtn").disabled = false;
+});
+$("#relock").onclick = () => location.reload();
+(async () => {
+  if (typeof DecompressionStream === "undefined" || !window.crypto || !crypto.subtle){
+    $("#err").textContent = "Браузер застарий. Оновіть iOS (16.4+) або Chrome."; return; }
+  try { BLOB = await kv("get", "blob"); } catch(e){ BLOB = null; }
+  if (BLOB) showPw(); else showLoad();
+})();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+// автоблокування після 10 хв у фоні
+let _hid = 0; document.addEventListener("visibilitychange", () => {
+  if (document.hidden) _hid = Date.now(); else if (D && _hid && Date.now() - _hid > 600000) location.reload(); });
+
+/* ── підготовка ── */
+function start(){
+  D.fields.forEach((f, i) => F[f] = i);
+  P = D.people.map(r => {
+    const o = {}; D.fields.forEach((f, i) => o[f] = r[i]);
+    o._q = norm([o.full_name, o.rank_actual, o.rank_staff, o.position, o.subdivision, o.company, o.platoon, o.squad,
+                 o.number, o.personal_number, o.location, o.vos].join(" | "));
+    o._d = digits(o.phone);
+    o._staff = !!o.subdivision; o._roster = String(o.in_spysok) === "1";
+    BY_ID[o.id] = o; return o;
+  });
+  $("#lock").classList.add("hidden"); $("#app").classList.remove("hidden");
+  document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.v));
+  $("#q").addEventListener("input", () => { clearTimeout(window._t); window._t = setTimeout(render, 200); });
+  go("people");
+}
+let V = "people";
+const ST = { people:{staff:true, roster:false, sub:"", lim:60}, bday:{p:"week"}, courses:{k:"summary", lim:80}, bcs:{open:null} };
+const PH = {people:"Пошук: ПІБ, посада, підрозділ, телефон…", bday:"Пошук серед іменинників…",
+            courses:"Пошук: ПІБ, підрозділ, навч. центр…", bcs:"Пошук підрозділу…"};
+function go(v){
+  V = v; $("#q").value = ST[v].q || ""; $("#q").placeholder = PH[v];
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+  window.scrollTo(0, 0); render();
+}
+function render(){
+  ST[V].q = $("#q").value;
+  ({people:rPeople, bday:rBday, courses:rCourses, bcs:rBcs})[V]();
+}
+function chips(items, cur, fn){
+  return items.map(([k, t]) => `<button class="chip ${k === cur ? "on" : ""}" data-k="${esc(k)}">${esc(t)}</button>`).join("");
+}
+function bindChips(sel, fn){ document.querySelectorAll(sel + " .chip[data-k]").forEach(b => b.onclick = () => fn(b.dataset.k)); }
+function matches(qn, o){
+  if (!qn) return true;
+  const qd = digits(qn);
+  if (qd.length >= 3 && /^[\d\s()+-]+$/.test(qn)) return o._d.includes(qd) || o._q.includes(qd);
+  return qn.split(" ").every(t => o._q.includes(t));
+}
+function personItem(o, extra=""){
+  const line2 = [o.rank_actual, o.position].filter(Boolean).join(" · ");
+  const line3 = [o.subdivision, o.company, o.platoon].filter(Boolean).join(" › ") || (o.exclusion ? "Виключений: " + o.exclusion : "");
+  return `<div class="item ${o._staff || o._roster ? "" : "gone"}" data-id="${o.id}">
+    <div class="t"><div class="n">${esc(o.full_name)}</div>${o.location ? `<span class="badge">${esc(o.location)}</span>` : ""}</div>
+    ${line2 ? `<div class="s">${esc(line2)}</div>` : ""}${line3 ? `<div class="s">${esc(line3)}</div>` : ""}${extra}</div>`;
+}
+function bindItems(){ document.querySelectorAll("#view .item[data-id]").forEach(e => e.onclick = () => { const o = BY_ID[e.dataset.id]; if (o) card(o); }); }
+
+/* ── Особовий склад ── */
+// Поля для фільтрів (як фільтри в заголовках таблиці на ПК)
+const PF = [["subdivision","Підрозділ"],["company","Рота"],["platoon","Взвод"],["squad","Відділення"],
+            ["rank_actual","Звання (факт)"],["rank_staff","Звання (штат)"],["position","Посада"],
+            ["location","Місце перебування"],["contract_type","Контракт / мобілізація"],["vos","ВОС"]];
+const PF_T = Object.fromEntries(PF);
+const SORTS = [["number","№ за штатом"],["full_name","ПІБ (А→Я)"],["subdivision","Підрозділ"],["rank_actual","Звання"]];
+const EMPTY = "(порожньо)";
+const fval = (o, f) => String(o[f] ?? "").trim() || EMPTY;
+function baseSet(skipField){
+  const s = ST.people, qn = norm(s.q);
+  return P.filter(o => ((!s.staff && !s.roster) || (s.staff && o._staff) || (s.roster && o._roster))
+    && Object.entries(s.f).every(([f, set]) => f === skipField || set.has(fval(o, f))) && matches(qn, o));
+}
+function rPeople(){
+  const s = ST.people;
+  s.f = s.f || {}; s.sort = s.sort || "number";
+  $("#vtitle").textContent = "Особовий склад";
+  const act = Object.entries(s.f);
+  $("#filters").innerHTML = `<div class="row">
+     <button class="chip ${s.staff ? "on" : ""}" id="fStaff">За штатом</button>
+     <button class="chip ${s.roster ? "on" : ""}" id="fRoster">За списком</button>
+     <button class="chip ${act.length ? "on" : ""}" id="fOpen">Фільтри${act.length ? " (" + act.length + ")" : ""} ▾</button>
+     <select class="chip" id="fSort">${SORTS.map(([k, t]) => `<option value="${k}" ${k === s.sort ? "selected" : ""}>↕ ${t}</option>`).join("")}</select></div>
+     ${act.length ? `<div class="row">${act.map(([f, set]) => `<button class="chip on" data-rm="${f}">${esc(PF_T[f])}: ${esc(set.size === 1 ? [...set][0] : set.size + " знач.")} ✕</button>`).join("")}
+       <button class="chip" id="fClr">Скинути все</button></div>` : ""}`;
+  $("#fStaff").onclick = () => { s.staff = !s.staff; s.lim = 60; render(); };
+  $("#fRoster").onclick = () => { s.roster = !s.roster; s.lim = 60; render(); };
+  $("#fOpen").onclick = () => filterPanel();
+  $("#fSort").onchange = e => { s.sort = e.target.value; render(); };
+  document.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { delete s.f[b.dataset.rm]; s.lim = 60; render(); });
+  if ($("#fClr")) $("#fClr").onclick = () => { s.f = {}; s.lim = 60; render(); };
+  const res = baseSet(null);
+  const k = s.sort;
+  const cmpNum = (a, b) => (parseInt(a.number) || 1e12) - (parseInt(b.number) || 1e12);
+  res.sort((a, b) => k === "number" ? cmpNum(a, b) || a.full_name.localeCompare(b.full_name, "uk")
+                    : String(a[k] || "￿").localeCompare(String(b[k] || "￿"), "uk") || a.full_name.localeCompare(b.full_name, "uk"));
+  $("#vsub").textContent = `${D.meta.count} у базі • ${D.meta.generated}`;
+  $("#view").innerHTML = `<div class="count">Знайдено: ${res.length}</div><div class="list">${res.slice(0, s.lim).map(o => personItem(o)).join("")}</div>
+    ${res.length > s.lim ? `<button class="more" id="more">Показати ще (${res.length - s.lim})</button>` : ""}
+    ${res.length ? "" : `<div class="empty">Нічого не знайдено</div>`}`;
+  if ($("#more")) $("#more").onclick = () => { s.lim += 100; render(); };
+  bindItems();
+}
+// Панель фільтрів: список полів → значення з кількістю, пошуком і галочками (каскадно, як в Excel)
+function filterPanel(field){
+  const s = ST.people, el = $("#sheet");
+  if (!field){
+    el.innerHTML = `<div class="pan"><div class="ph"><h3>Фільтри</h3><button id="sx">Готово</button></div>
+      <div class="list" style="padding:10px">${PF.map(([f, t]) => {
+        const set = s.f[f];
+        return `<div class="item" data-f="${f}"><div class="t"><div class="n">${t}</div>
+          <span class="badge ${set ? "ok" : ""}">${set ? (set.size === 1 ? esc([...set][0]) : set.size + " знач.") : "усі"} ›</span></div></div>`;
+      }).join("")}
+      ${Object.keys(s.f).length ? `<button class="more" id="fpClr">Скинути всі фільтри</button>` : ""}</div></div>`;
+    el.classList.remove("hidden");
+    el.querySelectorAll("[data-f]").forEach(e => e.onclick = () => filterPanel(e.dataset.f));
+    $("#sx").onclick = () => { el.classList.add("hidden"); render(); };
+    if ($("#fpClr")) $("#fpClr").onclick = () => { s.f = {}; filterPanel(); };
+    el.onclick = e => { if (e.target === el){ el.classList.add("hidden"); render(); } };
+    if (!history.state || !history.state.sheet) history.pushState({sheet:1}, "");
+    return;
+  }
+  // значення поля серед людей, що проходять усі ІНШІ фільтри
+  const cnt = new Map();
+  for (const o of baseSet(field)){ const v = fval(o, field); cnt.set(v, (cnt.get(v) || 0) + 1); }
+  const vals = [...cnt.keys()].sort((a, b) => a === EMPTY ? 1 : b === EMPTY ? -1 : a.localeCompare(b, "uk", {numeric:true}));
+  const cur = s.f[field];
+  const chk = new Set(cur ? [...cur].filter(v => cnt.has(v)) : []);
+  let q = "";
+  const draw = () => {
+    const qn = norm(q);
+    const shown = vals.filter(v => !qn || norm(v).includes(qn));
+    el.querySelector("#fvals").innerHTML = shown.slice(0, 400).map(v => `
+      <label class="item" style="display:flex;gap:10px;align-items:center;padding:9px 12px">
+        <input type="checkbox" data-v="${esc(v)}" ${chk.has(v) ? "checked" : ""} style="width:20px;height:20px;flex:none">
+        <span style="flex:1">${esc(v)}</span><span class="badge">${cnt.get(v)}</span></label>`).join("") +
+      (shown.length > 400 ? `<div class="count">ще ${shown.length - 400} — уточніть пошук</div>` : "") +
+      (shown.length ? "" : `<div class="empty">Немає значень</div>`);
+    el.querySelectorAll("#fvals input").forEach(c => c.onchange = () => { c.checked ? chk.add(c.dataset.v) : chk.delete(c.dataset.v); upd(); });
+    upd();
+  };
+  const upd = () => { const b = el.querySelector("#fapply"); if (b) b.textContent = chk.size ? `Застосувати (${chk.size})` : "Показати всіх"; };
+  el.innerHTML = `<div class="pan"><div class="ph"><button id="fback">‹ Назад</button><h3 style="flex:1;text-align:center">${esc(PF_T[field])}</h3><button id="fapply">Застосувати</button></div>
+    <div style="padding:10px 10px 0"><input class="search" id="fq" placeholder="Пошук значення…" autocomplete="off">
+    <div class="row"><button class="chip" id="fall">Відмітити знайдені</button><button class="chip" id="fnone">Зняти всі</button></div></div>
+    <div class="list" id="fvals" style="padding:10px"></div></div>`;
+  el.classList.remove("hidden");
+  $("#fq").oninput = e => { q = e.target.value; draw(); };
+  $("#fall").onclick = () => { const qn = norm(q); vals.filter(v => !qn || norm(v).includes(qn)).forEach(v => chk.add(v)); draw(); };
+  $("#fnone").onclick = () => { chk.clear(); draw(); };
+  $("#fback").onclick = () => filterPanel();
+  $("#fapply").onclick = () => {
+    if (chk.size) s.f[field] = new Set(chk); else delete s.f[field];
+    s.lim = 60; el.classList.add("hidden"); render();
+  };
+  draw();
+}
+
+/* ── Картка ── */
+function fmtDate(v){ const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v || ""); return m ? `${m[3]}.${m[2]}.${m[1]}` : v; }
+function card(o){
+  const el = $("#card");
+  const val = (f) => {
+    let v = o[f]; if (v === "" || v == null) return "";
+    const sv = String(v).trim();
+    if (sv === "0" || sv === "00:00:00" || /^1899|^1900/.test(sv)) return "";   // порожні значення з Excel
+    if (/date/.test(f)) v = fmtDate(v);
+    if (f === "phone") return String(v).split(/[,;]/).map(t => t.trim()).filter(Boolean)
+                              .map(t => `<a href="tel:${digits(t).replace(/^380/, "+380")}">${esc(t)}</a>`).join("<br>");
+    return esc(v);
+  };
+  let h = `<div class="head"><button class="x" id="cx">✕</button><div><h3>${esc(o.full_name)}</h3>
+           <div>${esc([o.rank_actual, o.position].filter(Boolean).join(" · "))}</div>
+           <div>${esc([o.subdivision, o.company].filter(Boolean).join(" › ") || "не в штаті")}</div></div></div>`;
+  const marks = D.marks.filter(([f]) => String(o[f] || "").trim()).map(([f, t]) => `<span class="badge ok">${t} ${esc(o[f])}</span>`);
+  const crs = (D.courses?.records || []).filter(r => r[14] === o.id);
+  if (marks.length || crs.length){
+    h += `<div class="sec"><h4>Курси</h4>${marks.length ? `<div class="marks">${marks.join("")}</div>` : ""}` +
+         crs.map(r => `<div class="kv"><b>${esc(r[3])}</b><span>${esc([r[2], r[4]].filter(Boolean).join(" • "))}</span></div>`).join("") + `</div>`;
+  }
+  for (const [tab, secs] of D.sections){
+    for (const [sec, fields] of secs){
+      const rows = fields.map(f => [f, val(f)]).filter(([, v]) => v);
+      if (!rows.length) continue;
+      h += `<div class="sec"><h4>${esc(tab === sec ? tab : tab + " • " + sec)}</h4>` +
+           rows.map(([f, v]) => `<div class="kv"><b>${esc(D.labels[f] || f)}</b><span>${v}</span></div>`).join("") + `</div>`;
+    }
+  }
+  el.innerHTML = h; el.classList.remove("hidden"); el.scrollTop = 0;
+  $("#cx").onclick = () => el.classList.add("hidden");
+  history.pushState({card:1}, "");
+}
+window.addEventListener("popstate", () => { $("#card").classList.add("hidden"); $("#sheet").classList.add("hidden"); });
+
+/* ── Дні народження ── */
+function rBday(){
+  const s = ST.bday;
+  $("#vtitle").textContent = "Дні народження";
+  $("#filters").innerHTML = `<div class="seg" id="bseg">${chips([["today","Сьогодні"],["tomorrow","Завтра"],["week","Тиждень"],["month","Місяць"]], s.p)}</div>`;
+  bindChips("#bseg", k => { s.p = k; render(); });
+  const now = new Date(); now.setHours(0,0,0,0);
+  const span = {today:[0,0], tomorrow:[1,1], week:[0,7], month:[0,30]}[s.p];
+  const qn = norm(s.q), out = [];
+  for (const o of P){
+    if (!o._staff || !o.birth_date) continue;
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(o.birth_date); if (!m || m[1] < "1901") continue;
+    let d = new Date(now.getFullYear(), +m[2] - 1, +m[3]);
+    if (d < now) d = new Date(now.getFullYear() + 1, +m[2] - 1, +m[3]);
+    const diff = Math.round((d - now) / 864e5);
+    if (diff < span[0] || diff > span[1]) continue;
+    if (!matches(qn, o)) continue;
+    out.push([diff, d.getFullYear() - +m[1], o]);
+  }
+  out.sort((a, b) => a[0] - b[0] || a[2].full_name.localeCompare(b[2].full_name, "uk"));
+  $("#vsub").textContent = `за штатом`;
+  $("#view").innerHTML = `<div class="count">Знайдено: ${out.length}</div><div class="list">` + out.map(([diff, age, o]) => {
+      const d = fmtDate(o.birth_date).slice(0, 5);
+      const tag = diff === 0 ? `<span class="badge ok">Сьогодні</span>` : diff === 1 ? `<span class="badge warn">Завтра</span>` : `<span class="badge">через ${diff} дн.</span>`;
+      return personItem(o, `<div class="row">${tag}<span class="badge">${d} • ${age} р.</span>${o.phone ? `<span class="badge">${esc(String(o.phone).split(",")[0])}</span>` : ""}</div>`);
+    }).join("") + `</div>` + (out.length ? "" : `<div class="empty">Немає</div>`);
+  bindItems();
+}
+
+/* ── Курси ── */
+function rCourses(){
+  const s = ST.courses, C = D.courses || {records:[], summary:[], kinds:[]};
+  $("#vtitle").textContent = "Курси лідерства";
+  $("#filters").innerHTML = `<div class="seg" id="cseg">${chips([["summary","Зведення"], ...C.kinds], s.k)}</div>`;
+  bindChips("#cseg", k => { s.k = k; s.lim = 80; render(); });
+  const qn = norm(s.q);
+  if (s.k === "summary"){
+    const rows = C.summary.filter(r => !qn || norm(r[0]).includes(qn));
+    const tot = rows.reduce((a, r) => [a[0] + r[1], a[1] + r[2], a[2] + r[3]], [0, 0, 0]);
+    $("#vsub").textContent = "унікальні люди";
+    $("#view").innerHTML = `<div class="bt"><table class="g"><thead><tr><th style="top:0">Підрозділ</th><th style="top:0">2025</th><th style="top:0">2026</th><th style="top:0">Всього</th></tr></thead><tbody>` +
+      rows.map(r => `<tr><td>${esc(r[0])}</td><td>${r[1]}</td><td>${r[2]}</td><td><b>${r[3]}</b></td></tr>`).join("") +
+      `<tr><td><b>ВСЬОГО</b></td><td><b>${tot[0]}</b></td><td><b>${tot[1]}</b></td><td><b>${tot[2]}</b></td></tr></tbody></table></div>`;
+    return;
+  }
+  const res = C.records.filter(r => r[0] === s.k && (!qn || qn.split(" ").every(t => norm(r.slice(1, 13).join(" ")).includes(t))));
+  const gone = res.filter(r => !r[11]).length;
+  $("#vsub").textContent = `${res.length} записів • не в штаті: ${gone}`;
+  $("#view").innerHTML = `<div class="list">` + res.slice(0, s.lim).map(r => `
+    <div class="item ${r[11] ? "" : "gone"}" ${r[14] ? `data-id="${r[14]}"` : ""}>
+      <div class="t"><div class="n">${esc(r[5])}</div><span class="badge ${r[11] ? "ok" : "bad"}">${r[11] ? "✓" : "✗"}${r[13] > 1 ? " ×" + r[13] : ""}</span></div>
+      <div class="s">${esc([r[3], r[2], r[4]].filter(Boolean).join(" • "))}</div>
+      <div class="s">${esc([r[6], r[7], r[8]].filter(Boolean).join(" · "))}</div></div>`).join("") + `</div>` +
+    (res.length > s.lim ? `<button class="more" id="more">Показати ще (${res.length - s.lim})</button>` : "") +
+    (res.length ? "" : `<div class="empty">Нічого не знайдено</div>`);
+  if ($("#more")) $("#more").onclick = () => { s.lim += 150; render(); };
+  bindItems();
+}
+
+/* ── БЧС ── */
+function rBcs(){
+  const s = ST.bcs, B = D.bcs;
+  $("#vtitle").textContent = "БЧС";
+  $("#filters").innerHTML = `<div class="row"><button class="chip" id="bAll">Розгорнути все</button><button class="chip" id="bNone">Згорнути до підрозділів</button></div><div class="count" style="margin:6px 2px 0">▸ — розкрити, назва — усі цифри рядка</div>`;
+  if (!B){ $("#view").innerHTML = `<div class="empty">Немає даних БЧС</div>`; return; }
+  const H = B.headers, n = B.rows.length;
+  const iS = H.indexOf("Штат всього"), iL = H.indexOf("Список всього"), iP = H.indexOf("% укомплектов."), iM = H.indexOf("Список моб");
+  if (!s.open) s.open = new Set(B.open);
+  const kids = {}; B.parent.forEach((p, i) => (kids[p] = kids[p] || []).push(i));
+  $("#bAll").onclick = () => { s.open = new Set(Object.keys(kids).map(Number).filter(k => k >= 0)); render(); };
+  $("#bNone").onclick = () => { s.open = new Set(B.open); render(); };
+  const qn = norm(s.q);
+  let show = null;
+  if (qn){
+    show = new Set();
+    B.rows.forEach((r, i) => { if (norm(r[0]).includes(qn)){ let p = i; while (p >= 0 && !show.has(p)){ show.add(p); p = B.parent[p]; } } });
+  }
+  const isUp = t => t === t.toUpperCase() && /[A-ZА-ЯІЇЄҐ]/.test(t);
+  const pct = v => (v === "" || v == null) ? "" : (Math.round(v * 1000) / 10) + "%";
+  let h = "";
+  const walk = (p, d) => {
+    for (const i of (kids[p] || [])){
+      if (show && !show.has(i)) continue;
+      const r = B.rows[i], has = (kids[i] || []).length > 0, open = show ? true : s.open.has(i);
+      const nm = r[0], cls = isUp(nm) ? (/^всього/i.test(nm) ? "t" : "g") : (B.parent[i] < 0 || isUp(B.rows[B.parent[i]]?.[0] || "") ? "s" : "");
+      const low = r[iS] && r[iL] !== "" && r[iL] / r[iS] < 0.5 && cls === "" ? "low" : "";
+      h += `<div class="br ${cls} ${low}" data-i="${i}" style="padding-left:${10 + d * 14}px">
+        <span class="car" data-c="${i}">${has ? (open ? "▾" : "▸") : ""}</span>
+        <span class="nm" data-d="${i}">${esc(nm)}</span>
+        <span class="nums" data-d="${i}">${r[iS] === "" ? "" : r[iS] + " / " + r[iL]}<small>${pct(r[iP])}${iM >= 0 && r[iM] !== "" ? " • моб " + r[iM] : ""}</small></span></div>`;
+      if (has && open) walk(i, d + 1);
+    }
+  };
+  walk(-1, 0);
+  $("#vsub").textContent = `штат / список • ${B.date ? "лист від " + B.date : ""}`;
+  $("#view").innerHTML = `<div class="bt">${h || '<div class="empty">Нічого не знайдено</div>'}</div>`;
+  document.querySelectorAll(".br .car[data-c]").forEach(e => e.onclick = ev => {
+    ev.stopPropagation(); const i = +e.dataset.c; if (!(kids[i] || []).length) return;
+    s.open.has(i) ? s.open.delete(i) : s.open.add(i); render();
+  });
+  document.querySelectorAll(".br [data-d]").forEach(e => e.onclick = () => bcsDetail(+e.dataset.d));
+}
+function bcsDetail(i){
+  const B = D.bcs, H = B.headers, r = B.rows[i], pctSet = new Set(B.pct);
+  const groups = [], gi = {};
+  const SUB = {"оф":0, "серж":1, "солд":2, "моб":3, "всього":4};
+  H.forEach((h, k) => {
+    if (!k) return;
+    const m = /^(.*) (оф|серж|солд|моб|всього)$/.exec(h);
+    const g = m ? m[1] : h, sub = m ? m[2] : "всього";
+    if (!(g in gi)){ gi[g] = groups.length; groups.push([g, [null, null, null, null, null]]); }
+    let v = r[k]; if (v !== "" && v != null && pctSet.has(k)) v = (Math.round(v * 1000) / 10) + "%";
+    groups[gi[g]][1][SUB[sub]] = v;
+  });
+  const hasMob = groups.some(g => g[1][3] !== null && g[1][3] !== "");
+  const cell = v => v === null || v === "" ? "" : esc(v);
+  const el = $("#sheet");
+  el.innerHTML = `<div class="pan"><div class="ph"><h3>${esc(r[0])}</h3><button id="sx">Закрити</button></div>
+    <table class="g"><thead><tr><th></th><th>оф</th><th>серж</th><th>солд</th>${hasMob ? "<th>моб</th>" : ""}<th>всього</th></tr></thead><tbody>` +
+    groups.filter(([, v]) => v.some(x => x !== null && x !== "" && x !== 0)).map(([g, v]) =>
+      `<tr><td>${esc(g)}</td><td>${cell(v[0])}</td><td>${cell(v[1])}</td><td>${cell(v[2])}</td>${hasMob ? `<td>${cell(v[3])}</td>` : ""}<td><b>${cell(v[4])}</b></td></tr>`).join("") +
+    `</tbody></table></div>`;
+  el.classList.remove("hidden");
+  el.onclick = e => { if (e.target === el) el.classList.add("hidden"); };
+  $("#sx").onclick = () => el.classList.add("hidden");
+  history.pushState({sheet:1}, "");
+}
+</script>
+</body>
+</html>
